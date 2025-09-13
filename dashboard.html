@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Student Finance Tool — Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{--accent:#06b6d4;--teal:#0ea5a4;--soft:#f3f9fa;--card:#ffffffcc;}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;}
+    body{
+      background-image:
+        radial-gradient(600px 300px at 10% 10%, rgba(6,182,212,0.08), transparent 10%),
+        linear-gradient(180deg,#e8fbff 0%, #f7feff 100%);
+      padding:24px;
+    }
+    .wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns: 320px 1fr;gap:20px;}
+    .sidebar{background:var(--card);padding:18px;border-radius:14px;box-shadow:0 8px 20px rgba(4,20,30,0.06);}
+    .main{background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.85)); padding:18px;border-radius:14px;box-shadow:0 8px 20px rgba(4,20,30,0.06);}
+    h1{margin:0;color:#044B50;}
+    .profile{margin-top:14px;padding:12px;border-radius:10px;background:#f0feff;}
+    .small{font-size:13px;color:#6b7280;}
+    .section{margin-top:14px;padding:12px;background:rgba(255,255,255,0.6);border-radius:10px;}
+    label{display:block;font-weight:600;margin-top:8px;color:#044B50;font-size:13px;}
+    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef0;margin-top:6px;font-size:14px;}
+    button.btn{background:linear-gradient(90deg,var(--teal),var(--accent));color:white;padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700;margin-top:10px;}
+    .tx-row{display:flex;gap:8px;margin-top:8px}
+    .tx-row input{flex:1}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    table th,table td{border:1px solid #e6eef0;padding:8px;text-align:center;font-size:13px}
+    .fee{margin-top:10px}
+    .assistant{
+      position:fixed;right:26px;bottom:26px;width:320px;border-radius:14px;padding:12px;background:linear-gradient(180deg,#ffffffee,#f0ffffdd);
+      box-shadow:0 10px 30px rgba(3,27,45,0.12);
+    }
+    .assistant .head{display:flex;align-items:center;gap:10px}
+    .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(90deg,#06b6d4,#0ea5a4);display:flex;align-items:center;justify-content:center;color:white;font-weight:800}
+    .bubble{margin-top:8px;padding:10px;border-radius:10px;background:#f7ffff}
+    .messages{max-height:220px;overflow:auto;margin-top:10px}
+    .msg{padding:8px;border-radius:8px;margin-bottom:8px;background:#eef9f9}
+    .msg.user{background:#dff6fb;text-align:right}
+    .chat-input{display:flex;gap:8px;margin-top:8px}
+    .logout{display:inline-block;margin-top:10px;color:#0b7285;cursor:pointer}
+    .alertBox{padding:10px;border-radius:10px;background:rgba(255,210,210,0.9);color:#8b0b0b;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h1>Student Finance Dashboard</h1>
+      <div class="small">Local app • Water-tone theme • AI Assistant "Aqua"</div>
+    </div>
+
+    <div class="wrap">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div id="profileCard" class="profile">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:56px;height:56px;border-radius:10px;background:linear-gradient(90deg,#06b6d4,#0ea5a4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px" id="avatar">A</div>
+            <div>
+              <div id="pName" style="font-weight:800;color:#044B50"></div>
+              <div class="small" id="pCollege"></div>
+            </div>
+          </div>
+          <div class="small" id="pGoal" style="margin-top:8px"></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn" id="exportBtn">Export CSV</button>
+            <button class="btn" id="clearBtn" style="background:linear-gradient(90deg,#ff7ab6,#ff8f6b)">Clear</button>
+          </div>
+          <div class="logout" id="logoutBtn">Log out</div>
+        </div>
+
+        <div class="section">
+          <div style="font-weight:700;color:#044B50">Set Monthly Budget</div>
+          <label>Budget (₹)</label>
+          <input id="budgetInput" type="number" placeholder="e.g., 10000">
+          <button class="btn" id="setBudget">Save Budget</button>
+          <div id="budgetStatus" class="small" style="margin-top:8px"></div>
+        </div>
+
+        <div class="section fee">
+          <div style="font-weight:700;color:#044B50">College Fee Table</div>
+          <table>
+            <tr><th>Year</th><th>Fee Range (₹)</th></tr>
+            <tr><td>1st Year</td><td>2,000 — 15,000</td></tr>
+            <tr><td>2nd Year</td><td>10,000 — 25,000</td></tr>
+            <tr><td>3rd Year</td><td>20,000 — 35,000</td></tr>
+            <tr><td>4th Year</td><td>30,000 — 45,000</td></tr>
+          </table>
+        </div>
+
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+        <div style="display:flex;gap:16px;align-items:flex-start">
+          <div style="flex:1">
+            <div class="section">
+              <div style="font-weight:700;color:#044B50">Add Transaction</div>
+              <div class="tx-row">
+                <input id="txDate" type="date" required>
+                <input id="txAmt" type="number" step="0.01" placeholder="Amount" required>
+              </div>
+              <label>Description</label>
+              <input id="txDesc" placeholder="e.g., Uber to college">
+              <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn" id="addTx">Add Transaction</button>
+                <div style="margin-left:12px" class="small" id="lastCat"></div>
+              </div>
+            </div>
+
+            <div class="section" style="margin-top:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="font-weight:700;color:#044B50">Recent Transactions</div>
+                <div class="small">Auto categories shown</div>
+              </div>
+              <table id="txTable">
+                <thead><tr><th>Date</th><th>Desc</th><th>Category</th><th>Amount (₹)</th><th>Action</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <div class="section" style="margin-top:12px">
+              <div style="font-weight:700;color:#044B50">Predicted Next Month</div>
+              <div class="small" id="predictionBox">Calculating…</div>
+            </div>
+          </div>
+
+          <div style="width:420px">
+            <div class="section">
+              <div style="font-weight:700;color:#044B50">Summary</div>
+              <div style="margin-top:8px"><strong>Total Spent: ₹<span id="totalSpent">0</span></strong></div>
+              <canvas id="pieChart" style="margin-top:12px"></canvas>
+              <canvas id="lineChart" style="margin-top:12px"></canvas>
+              <div id="alertBox" style="margin-top:10px"></div>
+            </div>
+
+            <div class="section" style="margin-top:12px">
+              <div style="font-weight:700;color:#044B50">Help & Queries</div>
+              <textarea id="queryText" placeholder="Describe your query (it is stored locally)..." rows="3"></textarea>
+              <button class="btn" id="submitQuery">Submit Query</button>
+              <div class="small" id="queryAck"></div>
+
+              <div style="margin-top:10px">
+                <div style="font-weight:700">Helplines</div>
+                <ul style="margin:6px 0 0 18px;">
+                  <li>Finance Office: +91 98765 43210</li>
+                  <li>Scholarship: +91 91234 56789</li>
+                  <li>Counselling: +91 99887 76655</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- AI Assistant widget -->
+  <div class="assistant" id="assistant">
+    <div class="head">
+      <div class="avatar">AQ</div>
+      <div>
+        <div style="font-weight:800;color:#044B50">Aqua • Your AI Assistant</div>
+        <div class="small">Tap to chat — quick tips & budgeting help ✨</div>
+      </div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="msg">Hi! I’m Aqua — tell me your concern (e.g., "I spent too much on food this month").</div>
+    </div>
+
+    <div class="chat-input">
+      <input id="chatInput" placeholder="Ask Aqua something..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #e6eef0">
+      <button class="btn" id="sendChat">Ask</button>
+    </div>
+  </div>
+
+<script>
+/* ---------- Utilities & Data store ---------- */
+const key = localStorage.getItem('sf_current');
+if (!key) {
+  alert('No user logged in — redirecting to login.');
+  window.location.href = 'index.html';
+}
+const users = JSON.parse(localStorage.getItem('sf_users') || '{}');
+const user = users[key] || {name:'Student'};
+document.getElementById('pName').innerText = user.name;
+document.getElementById('pCollege').innerText = user.collegeCode || '';
+document.getElementById('pGoal').innerText = user.goal ? 'Goal: ' + user.goal : '';
+document.getElementById('avatar').innerText = (user.name||'A').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+
+/* transactions stored under sf_tx_<key> */
+function loadTx(){ return JSON.parse(localStorage.getItem('sf_tx_' + key) || '[]'); }
+function saveTx(arr){ localStorage.setItem('sf_tx_' + key, JSON.stringify(arr)); }
+
+/* categorize by keywords, fallback to 'Other' */
+function categorizeDescription(desc=''){
+  const txt = desc.toLowerCase();
+  const rules = [
+    ['uber','Transport'],['ola','Transport'],['bus','Transport'],['train','Transport'],
+    ['hostel','Rent'],['rent','Rent'],['tuition','Education'],
+    ['book','Education'],['grocery','Food'],['restaurant','Food'],['cafe','Food'],['pizza','Food'],
+    ['movie','Entertainment'],['spotify','Entertainment'],['netflix','Entertainment'],
+    ['electricity','Utilities'],['water','Utilities'],['phone','Utilities'],['mobile','Utilities'],
+    ['clinic','Health'],['pharmacy','Health']
+  ];
+  for (const [k,c] of rules) if (txt.includes(k)) return c;
+  // If it's numeric words like 'fee' or 'semester' → Education
+  if (txt.includes('fee')||txt.includes('semester')) return 'Education';
+  return 'Other';
+}
+
+/* ---------- UI: Transactions ---------- */
+const txDate = document.getElementById('txDate');
+const txAmt = document.getElementById('txAmt');
+const txDesc = document.getElementById('txDesc');
+const addTxBtn = document.getElementById('addTx');
+const lastCat = document.getElementById('lastCat');
+
+function refreshTxTable(){
+  const txs = loadTx();
+  const tbody = document.querySelector('#txTable tbody');
+  tbody.innerHTML = '';
+  txs.slice().reverse().forEach((t,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${t.date}</td><td style="text-align:left">${t.description}</td><td>${t.category}</td><td>${t.amount.toFixed(2)}</td>
+      <td><button data-i="${txs.length - 1 - i}" class="btn" style="background:linear-gradient(90deg,#ff7ab6,#ff8f6b)">Delete</button></td>`;
+    tbody.appendChild(tr);
+  });
+  // attach delete
+  tbody.querySelectorAll('button').forEach(btn=>btn.addEventListener('click', (e)=>{
+    const idx = +e.currentTarget.dataset.i;
+    const arr = loadTx(); arr.splice(idx,1); saveTx(arr); refreshAll();
+  }));
+}
+
+/* add transaction */
+addTxBtn.addEventListener('click', ()=>{
+  const d = txDate.value || new Date().toISOString().slice(0,10);
+  const amt = parseFloat(txAmt.value || 0);
+  const desc = txDesc.value || 'Misc';
+  if (!amt || isNaN(amt)) { alert('Enter amount'); return; }
+  const cat = categorizeDescription(desc);
+  const tx = {date:d, amount:amt, description:desc, category:cat};
+  const arr = loadTx(); arr.push(tx); saveTx(arr);
+  lastCat.innerText = `Category: ${cat}`;
+  txDate.value=''; txAmt.value=''; txDesc.value='';
+  refreshAll();
+});
+
+/* ---------- Budget & Alerts ---------- */
+const budgetInput = document.getElementById('budgetInput');
+const setBudgetBtn = document.getElementById('setBudget');
+const budgetStatus = document.getElementById('budgetStatus');
+function getBudget(){ return parseFloat(localStorage.getItem('sf_budget_' + key) || '0'); }
+setBudgetBtn.addEventListener('click', ()=>{
+  const val = parseFloat(budgetInput.value || 0);
+  if (!val || isNaN(val)) { alert('Enter a valid budget'); return; }
+  localStorage.setItem('sf_budget_' + key, val);
+  budgetInput.value='';
+  refreshAll();
+});
+function computeAlert(total){
+  const b = getBudget();
+  if (!b) return '';
+  const pct = total / b;
+  if (pct >= 1) return `⚠️ Budget exceeded: spent ₹${total.toFixed(2)} of ₹${b.toFixed(2)}`;
+  if (pct >= 0.8) return `🔔 Approaching budget: ₹${total.toFixed(2)} / ₹${b.toFixed(2)} (${Math.round(pct*100)}%)`;
+  return '';
+}
+
+/* ---------- Charts & Summary ---------- */
+let pieChart=null, lineChart=null;
+function buildCharts(summary){
+  const ctxPie = document.getElementById('pieChart').getContext('2d');
+  const ctxLine = document.getElementById('lineChart').getContext('2d');
+  const categories = Object.keys(summary.byCategory || {});
+  const catAmounts = categories.map(k=>summary.byCategory[k]);
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(ctxPie, {type:'pie', data:{labels:categories, datasets:[{data:catAmounts}]}, options:{responsive:true}});
+  if (lineChart) lineChart.destroy();
+  const months = Object.keys(summary.monthly || {});
+  const monthVals = months.map(m=>summary.monthly[m]);
+  lineChart = new Chart(ctxLine, {type:'line', data:{labels:months, datasets:[{label:'Monthly Spend', data:monthVals, fill:false}]}, options:{responsive:true}});
+}
+
+/* compute monthly totals and category totals */
+function summarize(){
+  const txs = loadTx();
+  const total = txs.reduce((s,t)=>s + Number(t.amount),0);
+  const byCategory = {};
+  txs.forEach(t => { byCategory[t.category] = (byCategory[t.category]||0) + Number(t.amount); });
+  // monthly: use YYYY-MM
+  const monthly = {};
+  txs.forEach(t => {
+    const m = t.date.slice(0,7);
+    monthly[m] = (monthly[m]||0) + Number(t.amount);
+  });
+  return {total, byCategory, monthly};
+}
+
+/* ---------- Prediction: linear regression on month ordinal ---------- */
+function predictNextMonth(summary){
+  const months = Object.keys(summary.monthly || {}).sort();
+  if (months.length === 0) return 0;
+  if (months.length === 1) return summary.monthly[months[0]];
+  // convert YYYY-MM to ordinal number for regression
+  const X = months.map(m => {
+    const [y,mon] = m.split('-').map(Number);
+    return y*12 + mon;
+  });
+  const Y = months.map(m => summary.monthly[m]);
+  // compute slope & intercept using least squares
+  const n = X.length;
+  const xMean = X.reduce((a,b)=>a+b,0)/n;
+  const yMean = Y.reduce((a,b)=>a+b,0)/n;
+  let num=0, den=0;
+  for (let i=0;i<n;i++){ num += (X[i]-xMean)*(Y[i]-yMean); den += (X[i]-xMean)*(X[i]-xMean); }
+  const slope = den === 0 ? 0 : num/den;
+  const intercept = yMean - slope*xMean;
+  const next = (X[X.length-1] + 1) * slope + intercept;
+  return Math.max(0, next);
+}
+
+/* ---------- Export CSV ---------- */
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const txs = loadTx();
+  if (!txs.length){ alert('No transactions to export'); return; }
+  const rows = [['date','description','category','amount']];
+  txs.forEach(t => rows.push([t.date, `"${t.description.replace(/"/g,'""')}"`, t.category, t.amount]));
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `${user.collegeCode || 'student'}_transactions.csv`; a.click(); URL.revokeObjectURL(url);
+});
+
+/* ---------- Queries storage ---------- */
+document.getElementById('submitQuery').addEventListener('click', ()=>{
+  const q = document.getElementById('queryText').value.trim();
+  if (!q) return;
+  const queries = JSON.parse(localStorage.getItem('sf_queries_'+key) || '[]');
+  queries.push({text:q, at:new Date().toISOString()});
+  localStorage.setItem('sf_queries_'+key, JSON.stringify(queries));
+  document.getElementById('queryAck').innerText = '✅ Query saved locally. Help desk will contact you.';
+  document.getElementById('queryText').value='';
+});
+
+/* ---------- Clear data / logout ---------- */
+document.getElementById('clearBtn').addEventListener('click', ()=>{
+  if (!confirm('Clear all transactions for this profile?')) return;
+  saveTx([]); refreshAll();
+});
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  localStorage.removeItem('sf_current'); window.location.href='index.html';
+});
+
+/* ---------- AI Assistant (basic rule-based) ---------- */
+function appendMessage(text, who='bot'){
+  const div = document.createElement('div'); div.className = 'msg' + (who==='user' ? ' user' : '');
+  div.innerText = text; document.getElementById('messages').appendChild(div);
+  document.getElementById('messages').scrollTop = 9999;
+}
+document.getElementById('sendChat').addEventListener('click', ()=>{
+  const q = document.getElementById('chatInput').value.trim();
+  if (!q) return;
+  appendMessage(q, 'user'); document.getElementById('chatInput').value='';
+  setTimeout(()=> respondAqua(q), 600);
+});
+function respondAqua(q){
+  const txt = q.toLowerCase();
+  if (txt.includes('save') || txt.includes('goal')) { appendMessage(`Nice goal! Break it down: set a monthly saving target. I can help estimate how much to save each month to reach "${user.goal || 'your goal'}".`); return; }
+  if (txt.includes('budget') || txt.includes('alert')) { appendMessage('Set a realistic monthly budget and check the Summary. I will notify when you reach 80% or exceed it.'); return; }
+  if (txt.includes('food') || txt.includes('eat') || txt.includes('coffee')) { appendMessage('You can try meal prepping or cheaper cafes near campus — small cuts add up. Try tracking FOOD category for 2 weeks.'); return; }
+  if (txt.includes('predict') || txt.includes('forecast')) { appendMessage('I run a simple prediction using recent monthly totals. Check "Predicted Next Month" on the dashboard.'); return; }
+  if (txt.includes('help') || txt.includes('advisor')) { appendMessage('For scholarships & finance help, call the helpline numbers in the dashboard. Or submit a query in Help & Queries.'); return; }
+  // default friendly reply
+  appendMessage('I can help with budgeting tips, quick analysis, or predict next month spend. Try: "How much will I spend next month?" or "I spent too much on food."');
+}
+
+/* ---------- Refresh everything ---------- */
+function refreshAll(){
+  const summary = summarize();
+  document.getElementById('totalSpent').innerText = summary.total.toFixed(2);
+  const alertText = computeAlert(summary.total);
+  document.getElementById('alertBox').innerHTML = alertText ? `<div class="alertBox">${alertText}</div>` : '';
+  buildCharts({byCategory: summary.byCategory, monthly: summary.monthly});
+  refreshTxTable();
+  // prediction
+  const pred = predictNextMonth({monthly: summary.monthly});
+  document.getElementById('predictionBox').innerText = 'Predicted spend: ₹' + pred.toFixed(2);
+  document.getElementById('budgetStatus').innerText = getBudget() ? 'Budget set: ₹' + getBudget().toFixed(2) : 'Budget not set';
+  document.getElementById('lastCat').innerText = '';
+}
+
+/* ---------- init ---------- */
+(function init(){
+  // ensure tx array exists
+  if (!localStorage.getItem('sf_tx_' + key)) localStorage.setItem('sf_tx_' + key, JSON.stringify([]));
+  // render tx & charts
+  refreshAll();
+})();
+</script>
+</body>
+</html>
